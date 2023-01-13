@@ -11,7 +11,7 @@ cc = CurrencyConverter()
 def get_all_stock_data(ticker):
     ##### Returns basic stock info from api #####
 
-    stock = yf.Ticker(ticker) #api returns a Dataframe so I will have to create a dictionary containing the extracted data
+    stock = yf.Ticker(ticker)
     stock_info = stock.get_info()
 
     basic_info = {
@@ -52,7 +52,7 @@ def get_historical_financials_api(ticker):
         stock_bs_key = list(stock_bs.keys())[i]
         stock_bs_data = stock_bs[stock_bs_key]
 
-#checks value exists##################################################
+#checks value exists #############################################################################
     ##### Income Statement figures
         
         if not 'TotalRevenue' in stock_is_data:
@@ -142,7 +142,7 @@ def get_historical_financials_api(ticker):
             cc = 0
         cc = str(stock_bs_data["CashCashEquivalentsAndShortTermInvestments"])
         
- #ends value exists check################################################################################      
+ # ends value exists check ################################################################################      
         
         #creates a dictionary of financials per period returned from api
         period = (str(list(stock_is.keys())[i]))[:4]
@@ -207,13 +207,13 @@ def get_first_historical_record(ticker):
     stock = yf.Ticker(ticker)
     stock_is = stock.get_income_stmt().to_dict()
     stock_is_key = list(stock_is.keys())[-1]
-    stock_is_data = stock_is[stock_is_key] # most recent stock data
+    stock_is_data = stock_is[stock_is_key]
     stock_cf = stock.get_cashflow().to_dict()
     stock_cf_key = list(stock_cf.keys())[-1]
-    stock_cf_data = stock_cf[stock_cf_key] # most recent stock data
+    stock_cf_data = stock_cf[stock_cf_key]
     stock_bs = stock.get_balance_sheet().to_dict()
     stock_bs_key = list(stock_bs.keys())[-1]
-    stock_bs_data = stock_bs[stock_bs_key] # most recent stock data
+    stock_bs_data = stock_bs[stock_bs_key]
 
 
     hist_financials = {
@@ -230,7 +230,7 @@ def get_first_historical_record(ticker):
     return hist_financials
 ######################################################################################################
 
-# Below helper functions are for getting individual/direct api json responses to specific routes
+# Below are some helper functions that are for getting direct api json responses to appear in some routes
 
 def get_stock_info(ticker):
     """Return stock info"""

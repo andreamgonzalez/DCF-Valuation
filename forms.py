@@ -15,17 +15,6 @@ class LoginForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])
     password = PasswordField('Password', validators=[Length(min=6)])
 
-class EditProfileForm(FlaskForm):
-    """Form for user to edit profile info."""
-
-    username = StringField('Username', validators=[DataRequired()])
-    password = PasswordField('Password', validators=[Length(min=6)])
-
-# class searchForm(FlaskForm):
-#     """Form for searching for stocks"""
-
-#     symbol = StringField('Search for stock using ticker (i.e. "MSFT")', validators=[DataRequired()])
-
 class UserValuationForm(FlaskForm):
     """Form for adding user assumptions data to calculate valuations"""
     valuation_name = StringField('Enter Valuation Name', validators=[DataRequired()])
