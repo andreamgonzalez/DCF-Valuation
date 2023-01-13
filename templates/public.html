@@ -1,0 +1,87 @@
+<!-- Public landing page for non-registered users-->
+{% extends 'base.html' %}
+{% block content %}
+
+<style>
+  body{
+    background-color: white !important;
+  }
+  
+  p, h1, h2, h3, h4, h5, h6, h7{
+    color:black !important;
+  }
+</style>
+
+  <!-- ======= Hero Section ======= -->
+  <section id="hero" class="hero d-flex align-items-center">
+
+    <div class="container" style="margin-top: 100px;">
+      <div class="row">
+        <div class="col-lg-6 d-flex flex-column">
+          <h2 data-aos="fade-up">Need a Discounted Cash Flow analysis on the fly?</h2><br>
+          <h6 data-aos="fade-up" data-aos-delay="400" style="margin-bottom: 20px">We can help! Simply enter your assumptions for your preferred stock and you will have a basic DCF analysis in minutes!</h6>
+          <div data-aos="fade-up" data-aos-delay="600">
+            <div class="text-center text-lg-start formula">
+                <a href="/stocks" class="btn btn-lg btn-block btn-dark">Get Started</a>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-6 hero-img" data-aos="zoom-out" data-aos-delay="200">
+          <img src="../static/images/dcf-valuation-formula-768x128.png" class="img-fluid" alt="">
+        </div>
+
+        <p style="font-size: 12px; margin-top:5px">P.S. Creating an account is recommended so that you may save your valuations and view them again later!</p>
+      </div>
+    </div>
+
+  </section><!-- End Hero -->
+
+  <section id="what" class="heros d-flex align-items-center">
+
+    <div class="container" style="margin-top: 100px;">
+      <div class="row">
+        <div class="col-lg-12 d-flex flex-column">
+          <h3 data-aos="fade-up" style="text-align:center;">What is a Discounted Cash Flow Valuation?</h3><br>
+          <h5 data-aos="fade-up" data-aos-delay="400" style="margin-bottom: 20px">Good question.</h5>
+          <div data-aos="fade-up" data-aos-delay="600">
+
+            <h7>"The purpose of DCF analysis is to estimate the money an investor would receive from an investment, adjusted for the time value of money. The time value of money assumes that a dollar that you have today is worth more than a dollar that you receive tomorrow because it can be invested."</h7>
+            <h6 data-aos="fade-up" data-aos-delay="400" style="margin-bottom: 20px">- investopedia.com</h6>
+          
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+
+  <section id="how" class="heros d-flex align-items-center">
+
+    <div class="container" style="margin-top: 50px; margin-bottom: 100px;">
+      <div class="row">
+        <div class="col-lg-12 d-flex flex-column">
+          <h3 data-aos="fade-up" style="text-align:center;">What's the math?</h3><br>
+          <h5 data-aos="fade-up" data-aos-delay="400" style="margin-bottom: 20px">Ahh, yes.. Well, it can get pretty complicated pretty fast but here's a general guide: </h5>
+          <div data-aos="fade-up" data-aos-delay="600">
+
+            <!-- <h7>A discounted cash flow (DCF) valuation is a method used to estimate the value of an investment or asset by projecting its future cash flows and then discounting them back to present value. Here is a step-by-step process for creating a DCF valuation: </h7><br><br> -->
+              <ol>
+                <li><h7>Identify the cash flows that the investment or asset is expected to generate. These can be projected using financial statements, industry data, and other sources.</h7></li>
+                <li><h7>Determine the discount rate to use. This is the required rate of return that investors expect for taking on the risk of the investment.</h7></li>
+                <li><h7>Estimate the terminal value of the investment or asset. This is the value of the investment or asset at the end of the projection period, which can be calculated using a terminal growth rate and a terminal multiple.</h7></li>
+                <li><h7>Discount the projected cash flows and terminal value back to present value using the discount rate. This can be done using a present value formula or a financial calculator.</h7></li>
+                <li><h7>Add up the discounted cash flows and terminal value to get the DCF valuation for the investment or asset.</h7></li>
+              </ol><br>
+            
+            <h7>It's important to note that a DCF valuation is only as accurate as the assumptions used in the projection. Therefore, it's important to be as realistic and conservative as possible when estimating future cash flows and the discount rate.</h7>
+          
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+{% endblock %}
+

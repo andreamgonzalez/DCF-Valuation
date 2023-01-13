@@ -1,0 +1,143 @@
+<!-- This page is the home page for registered users. It will display the users
+     dashboard which lists all of the users saved valuations -->
+
+{% extends 'base.html' %}
+{% block content %}
+<style>
+  .bubble {
+    display:inline-block;
+    color:rgb(0, 0, 0);
+    background:rgba(255, 255, 255, 0);
+    box-shadow: 0 0 5px -1px rgba(0, 0, 0, 0.2);
+    cursor:pointer;
+    vertical-align:middle;
+    height: 30px;
+    width: 60px;
+    border-radius: 8%;
+    padding: 2px;
+    text-align: center;
+}
+  .bubble:hover {
+    display:inline-block;
+    color:rgb(255, 255, 255);
+    background:rgb(243, 117, 95);
+    box-shadow: 0 0 5px -1px rgba(0,0,0,0.2);
+    cursor:pointer;
+    vertical-align:middle;
+    height: 30px;
+    width: 60px;
+    border-radius: 8%;
+    padding: 2px;
+    text-align: center;
+    box-shadow: 0 0 10px 3px rgba(0, 0, 0, 0.151);
+}
+</style>
+
+    <div class="flex-row justify-content-end"  style="margin-top: 10px;">
+      <div class="row">
+        <div class="col col-xs-6 col-sm-7 col-md-10">
+          <h4 id="sidebar-username">{{ user.username }}, checkout your saved valuations!</h4>
+        </div>
+        
+        <div class="col justify-content-end">
+          <div class="col">
+            <form method="POST" action="">
+              <button class="btn btn-sm btn-secondary">Edit Profile</button>
+            </form>
+          </div>
+          <div class="col" style="margin-top: 5px;">
+            <form method="POST" action="/users/delete">
+              <button class="btn btn-sm btn-outline-danger">Delete Account</button>
+            </form>
+          </div>
+      </div>
+    </div>
+  </div>
+
+  <h4>Your DCF Valuations</h4>
+  <div class="row">
+    <div class="col" style="margin-top:10px;">
+      <div class="card" style="width: 18rem;">
+        <div class="card-body">
+          <h5 class="card-title">AMZN</h5>
+          <h6 class="card-subtitle mb-2 text-muted">valuation name</h6>
+          <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+          <a href="#" class="btn btn-sm btn-outline-info">View Valuation</a>
+          <a href="#" class="btn btn-sm" style="outline:none !important;">Delete</a>
+        </div>
+      </div>
+    </div>
+    <div class="col" style="margin-top:10px;">
+      <div class="card" style="width: 18rem;">
+        <div class="card-body">
+          <h5 class="card-title">AMZN</h5>
+          <h6 class="card-subtitle mb-2 text-muted">valuation name</h6>
+          <p class="card-text">Date: 03/07/2023</p>
+          <p class="card-text">EV: $123,452,450</p>
+          <p class="card-text">Share Price: $1,300</p>
+          <a href="#" class="btn btn-sm btn-outline-info">View Valuation</a>
+          <a href="#" class="btn btn-sm" style="outline:none !important;">Delete</a>
+        </div>
+      </div>
+    </div>
+    <div class="col" style="margin-top:10px;">
+      <div class="card" style="width: 18rem;">
+        <div class="card-body">
+          <h5 class="card-title">AMZN</h5>
+          <h6 class="card-subtitle mb-2 text-muted">valuation name</h6>
+          <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+          <a href="#" class="btn btn-sm btn-outline-info">View Valuation</a>
+          <a href="#" class="btn btn-sm" style="outline:none !important;">Delete</a>
+        </div>
+      </div>
+    </div>
+    <div class="col" style="margin-top:10px;">
+      <div class="card" style="width: 18rem;">
+        <div class="card-body">
+          <h5 class="card-title">AMZN</h5>
+          <h6 class="card-subtitle mb-2 text-muted">valuation name</h6>
+          <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+          <a href="#" class="btn btn-sm btn-outline-info">View Valuation</a>
+          <a href="#" class="btn btn-sm" style="outline:none !important;">Delete</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="favorites-container" style="margin-top:20px">
+    <h4>Your Favorited Stocks</h4>
+
+    <div class="row">
+      <div class="col-1" style="margin-top:10px;">
+        <a href="/stock/MSFT" class="bubble">
+            <p>MSFT</p>
+        </a>
+      </div>
+      <div class="col-1" style="margin-top:10px;">
+        <a href="/stock/AMZN" class="bubble" >
+            <p>AMZN</p>
+        </a>
+      </div>
+      <div class="col-1" style="margin-top:10px;">
+        <a href="/stock/NFLX"class="bubble" >
+            <p >NFLX</p>            
+        </a>
+      </div>
+      <div class="col-1" style="margin-top:10px;">
+        <a href="/stock/GOOG" class="bubble">
+            <p >GOOG</p>            
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  p{
+    margin: 0px;
+  }
+
+
+</style>
+
+{% endblock %}

@@ -1,0 +1,46 @@
+<!-- This page is for listing stocks to choose from for analysis or also a search feature that can search by symbol -->
+
+{% extends 'base.html' %}
+{% block content %}
+
+  <div class="row justify-content-md-center">
+    <div class="col-md-7 col-lg-5">
+      <h2 class="join-message">Find a stock to analyze</h2>
+      <form action="/search" method="POST">
+        <div class="input-group mb-3">
+          
+            <input type="text" class="form-control shadow-none" id="search" name="search" placeholder="Search for stock ticker MSFT">
+            <div class="input-group-append">
+              <button class="btn btn-dark" type="submit">Search</button>
+            </div>
+        </div>
+      </form>
+
+      <div class="row">
+        <div class="col" style="margin-top:10px;">
+          <a href="/stock/MSFT" class="bubble">
+              <p>MSFT</p>
+          </a>
+        </div>
+        <div class="col" style="margin-top:10px;">
+          <a href="/stock/AMZN" class="bubble" >
+              <p>AMZN</p>
+          </a>
+        </div>
+        <div class="col" style="margin-top:10px;">
+          <a href="/stock/NFLX"class="bubble" >
+              <p >NFLX</p>            
+          </a>
+        </div>
+        <div class="col" style="margin-top:10px;">
+          <a href="/stock/GOOG" class="bubble">
+              <p >GOOG</p>            
+          </a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+{% endblock %}
+
+

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>The Analyst</title>
+  <link rel="stylesheet" href="/static/stylesheets/style.css">
+  <link rel="stylesheet"
+        href="https://unpkg.com/bootstrap/dist/css/bootstrap.css">
+  <script src="https://unpkg.com/jquery"></script>
+  <!-- <script src="https://unpkg.com/popper"></script> -->
+  <script src="https://unpkg.com/bootstrap"></script>
+
+  <link rel="stylesheet"
+        href="https://use.fontawesome.com/releases/v5.3.1/css/all.css">
+  <!-- <link rel="shortcut icon" href="/static/favicon.ico"> -->
+</head>
+
+<body class="{% block body_class %}{% endblock %}">
+
+  <nav class="navbar navbar-expand navbar-dark bg-dark">
+    <div class="container-fluid">
+      <div class="navbar-brand mb-0 h1">
+        <a href="/" class="navbar-brand">The Analyst</a>
+      </div>
+
+
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav">
+          {% if not g.user %}
+          <li>
+            <a class="nav-link" href="/stocks">Stocks</a>
+          </li>
+          <li>
+            <a class="nav-link" href="/signup">Sign up</a>
+          </li>
+          <li>
+            <a class="nav-link" href="/login">Log in</a>
+          </li>
+          {% else %}
+          <li>
+            <a class="nav-link" href="/dashboard/{{g.user.id}}">Dashboard</a>
+          </li>
+          <li>
+            <a class="nav-link" href="/stocks">Stocks</a>
+          </li>
+          <li>
+            <a class="nav-link" href="/logout">Log out</a>
+          </li>
+          {% endif %}
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+<div class="container">
+  <!-- {% for category, message in get_flashed_messages(with_categories=True) %}
+  <div class="alert alert-{{ category }}">{{ message }}</div>
+  {% endfor %} -->
+
+  {% block content %}
+  {% endblock %}
+
+</div>
+</body>
+
+<script src="/static/app.js"></script>
+
+
+</html>

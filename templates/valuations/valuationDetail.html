@@ -1,0 +1,214 @@
+<!-- Valuation template aka where all the action happens-->
+
+{% extends 'base.html' %}
+{% block content %}
+<style>
+body{
+  background-color: #212529;
+}
+
+h1, h2, h3, p, h4, h5, h6, h7 {
+  color:white
+}
+
+.container{
+  margin-top: 85px
+}
+
+table{
+  margin-bottom: 50px
+}
+
+td{
+  text-align: right
+}
+
+a{
+  text-decoration: none;
+  color: #b8b9bc;
+}
+
+a.btn:hover{
+  background-color: #b8b9bc;
+  border-color: #212529;
+  transition-delay: ease-in;
+}
+
+.link{
+  text-decoration: none;
+}
+
+thead{
+  color: white;
+}
+</style>
+
+
+<div class="container">
+  <div class="row">
+    <div class="col col-3">
+        <h3>{{stock.name}}</h3>
+        <a class="link" href="{{stock.website}}" style="color:rgb(38, 55, 211)">{{stock.website}}</a>
+    </div>
+      <!-- Favorite stock -->
+  
+    <div class="col">
+      <a  href="/valuation/{{stock.symbol}}" type="button" class="btn btn-lg btn-light">Start Valuation</a>
+    </div>
+  </div><br><br>
+
+<p>Forecasted Financials based off of assumptions the following assumptions: </p>
+<table>
+  <tbody>
+    <tr>
+      <thead>
+        Revenue: 
+      </thead>
+      <thead>
+        Ebit:
+      </thead>
+      <thead>
+        Tax:
+      </thead>
+      <thead>
+        D&A:
+      </thead>
+      <thead>
+        CAPEX:
+      </thead>
+      <thead>
+        NWC:
+      </thead>
+      <thead>
+        WACC:
+      </thead>
+      <thead>
+        Terminal Value:
+      </thead>
+      <thead>
+        Share Price:
+      </thead>
+    </tr>
+  </tbody>
+</table>
+
+
+<div class="table-responsive-sm">
+
+    <table class="table table-sm  table-striped table-hover table-dark">
+      <thead>
+        <tr>
+          <th scope="col">STOCK SYMBOL : {{stock.symbol}}</th>
+          {% for p in valuation[1:] %}
+          <th scope="col" style="text-align: right">p{{p["period"]}}</th>
+          {% endfor%}
+        </tr>
+      </thead>
+      <tbody>
+<!---------------------------------- Income Stmt ------------------------------------>
+        <tr>
+          <th scope="row">Revenue</th>
+          {% for p in valuation[1:] %}
+          <td>${{ p["total_revenue"]}}</td>
+          {% endfor%}
+        </tr>
+
+        <tr>
+          <th scope="row">EBIT</th>
+          {% for p in valuation[1:] %}
+          <td>${{ p["ebit"]}}</td>
+          {% endfor%}
+        </tr>
+
+        <tr>
+          <th scope="row">Taxes</th>
+          {% for p in valuation[1:] %}
+          <td>${{ p["taxes"]}}</td>
+          {% endfor%}
+        </tr>
+
+        <tr>
+          <th scope="row">EBIAT</th>
+          {% for p in valuation[1:] %}
+          <td>${{ p["ebiat"]}}</td>
+          {% endfor%}
+        </tr>
+
+        <tr>
+          <th scope="row">Depreciation & Amortization</th>
+          {% for p in valuation[1:] %}
+          <td>${{ p["depreciation_amortization"]}}</td>
+          {% endfor%}
+        </tr>
+
+        <tr>
+          <th scope="row">CAPEX</th>
+          {% for p in valuation[1:] %}
+          <td>${{ p["capex"]}}</td>
+          {% endfor%}
+        </tr>
+
+        <tr>
+          <th scope="row">Change in Working Capital</th>
+          {% for p in valuation[1:] %}
+          <td>${{ p["change_working_capital"]}}</td>
+          {% endfor%}
+        </tr>
+
+        <tr>
+          <th scope="row">Unlevered Free Cash Flow</th>
+          {% for p in valuation[1:] %}
+          <td>${{ p["unlevered_cf"]}}</td>
+          {% endfor%}
+        </tr>
+
+        <tr>
+          <th scope="row">Present Value of Free Cash Flow</th>
+          {% for p in valuation[1:] %}
+          <td>${{ p["pv_unlevered_cf_total"]}}</td>
+          {% endfor%}
+        </tr>
+
+        <tr>
+          <th scope="row">Terminal Value</th>
+          {% for p in valuation[:1] %}
+          <td>${{ p["terminal_value"]}}</td>
+          {% endfor%}
+        </tr>
+
+        <tr>
+          <th scope="row">Present Value of Terminal Value</th>
+          {% for p in valuation[1:] %}
+          <td>${{ p["pv_terminal_value"]}}</td>
+          {% endfor%}
+        </tr>
+
+        <tr>
+          <th scope="row">Enterprise Value</th>
+          {% for p in valuation[:1] %}
+          <td>${{ p["enterprise_val"]}}</td>
+          {% endfor%}
+        </tr>
+
+        <tr>
+          <th scope="row">Equity Value</th>
+          {% for p in valuation[:1] %}
+          <td>${{ p["equity_value"]}}</td>
+          {% endfor%}
+        </tr>
+
+        <tr>
+          <th scope="row">Share Price</th>
+          {% for p in valuation[:1] %}
+          <td>${{ p["share_price"]}}</td>
+          {% endfor%}
+        </tr>
+      </tbody>
+    </table>
+
+  <h5>About {{stock.symbol}}: </h5>
+  <div><p>{{stock.summary}}</p></div>
+</div>
+{% endblock %}
+
+

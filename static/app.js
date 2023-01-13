@@ -1,0 +1,1 @@
+// $('#favorite').tooltip(options)
