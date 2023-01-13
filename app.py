@@ -96,7 +96,6 @@ def login():
         if user:
             do_login(user)
             flash(f"Hello, {user.username}!", "success")
-            # return render_template("/users/dashboard.html", user=user)
             return redirect(f"/dashboard/{user.id}")
         flash("Invalid credentials.", 'danger')
     return render_template('login.html', form=form)
@@ -108,6 +107,7 @@ def logout():
     do_logout()
     flash("Logged out successfully.", "success")
     return redirect('/login')
+
 
 @app.route('/users/delete', methods=["POST"])
 def delete_user():
@@ -133,6 +133,7 @@ def homepage():
     """Show public homepage"""
     return render_template('public.html')
 
+
 @app.route('/dashboard/<user_id>', methods=["GET", "POST"])
 def show_dashboard(user_id):
     """Show the users dashboard"""
@@ -148,6 +149,7 @@ def show_search_page():
     """Show the stock search page"""
     return render_template('valuations/stocksSearch.html')
 
+
 @app.route('/search', methods=["POST"])
 def searches_stock():
     """Search for a typed stock"""
@@ -160,6 +162,7 @@ def searches_stock():
     flash("Please enter a search term", 'warning')
     return redirect('/')
 
+
 @app.route('/stock/<ticker>', methods=["GET", "POST"])
 def show_stock_detail(ticker):
     """Show the stock detail page with historical data"""
@@ -170,6 +173,7 @@ def show_stock_detail(ticker):
 
     return render_template("/valuations/stockDetail.html", stock=stock, prev_financials=prev_financials, prev_growth_rates=prev_growth_rates)
 
+
 @app.route('/valuation/<ticker>', methods=["GET", "POST"])
 def valuation_assumptions_form(ticker):
     """Start a valuation by presenting form and the historical data for the stock"""
@@ -178,7 +182,7 @@ def valuation_assumptions_form(ticker):
     prev_growth_rates = list(Valuation.get_prev_growth_rates(ticker))
     
     if not g.user:
-        form = PublicValuationForm(symbol=ticker) #sets ticker as default value for form symbol field
+        form = PublicValuationForm(symbol=ticker)
         if request.method == 'POST':
             if form.validate_on_submit():
                         valuation = Valuation.calculate_user_valuation(
@@ -193,13 +197,12 @@ def valuation_assumptions_form(ticker):
                         tgr = form.terminal_growth.data,
                         shares = form.shares.data,
                     )
-                        # valuation_id = valuation[0].get('valuation_id')
 
                         return render_template('/valuations/valuationDetail.html', valuation=valuation, stock=stock)
 
         return render_template("/valuations/publicValuationForm.html", stock=stock, form=form, prev_financials=prev_financials, prev_growth_rates=prev_growth_rates)
     
-    form = UserValuationForm(symbol=ticker) #sets ticker as default value for form symbol field
+    form = UserValuationForm(symbol=ticker)
     if request.method == 'POST':
         valuation = Valuation.calculate_and_save_valuation(
                 valuation_name = form.valuation_name.data,
@@ -218,20 +221,13 @@ def valuation_assumptions_form(ticker):
         db.session.add(valuation)
         db.session.commit()
 
-            ##get valuation id from db according to name
+        #get valuation id from db by name
         valuation_id = Valuation.get_user_valuation_id(form.valuation_name.data, g.user.id)
 
         return redirect(f'/valuation/{g.user.id}/{ticker}/{valuation_id}')
 
     return render_template("/valuations/valuationForm.html", stock=stock, form=form, prev_financials=prev_financials, prev_growth_rates=prev_growth_rates)
 
-# @app.route('/valuation/<int:valuation_id>')
-# def calculated_valuation(valuation_id):
-#     """Show valuation results"""
-    
-#     valuation = Valuation.get_user_valuation(valuation_id)
-        
-#     return render_template("/valuations/valuationDetail.html", valuation=valuation)
 
 @app.route('/valuation/<user_id>/<stock>/<valuation_id>')
 def show_user_valuation(user_id, valuation_id, stock):
@@ -245,71 +241,51 @@ def show_user_valuation(user_id, valuation_id, stock):
         
     return render_template("/valuations/valuationDetail.html", valuation=valuation, stock=stock)
 
-@app.route('/valuation/delete/<int:valuation_id>/<int:user_id>', methods=["POST"])
-def delete_user_valuation(valuation_id):
-    """Delete a valuation"""
 
-    if not g.user:
-        flash("Access unauthorized.", "danger")
-        return redirect("/")
+########################The below are not implemented yet###########################
+# @app.route('/valuation/delete/<int:valuation_id>/<int:user_id>', methods=["POST"])
+# def delete_user_valuation(valuation_id):
+#     """Delete a valuation"""
 
-    valuation = Valuation.query.get_or_404(valuation_id)
-    if valuation.user_id != g.user.id:
-        flash("Access unauthorized.", "danger")
-        return redirect("/")
+#     if not g.user:
+#         flash("Access unauthorized.", "danger")
+#         return redirect("/")
+
+#     valuation = Valuation.query.get_or_404(valuation_id)
+#     if valuation.user_id != g.user.id:
+#         flash("Access unauthorized.", "danger")
+#         return redirect("/")
     
-    valuation = db.session.query(valuation).where(valuation.valuation_id == valuation_id)
+#     valuation = db.session.query(valuation).where(valuation.valuation_id == valuation_id)
 
-    db.session.delete(valuation) ##deletes all the periods valuated for valuation of this id
-    db.session.commit()
+#     db.session.delete(valuation) ##deletes all the periods valuated for valuation of this id
+#     db.session.commit()
 
-    return redirect(f"/dashboard/{g.user.id}")
-
-
-@app.route('/stock/favorite/<stock>/<int:user_id>', methods=['POST'])
-def add_favorite_stock(stock):
-    """Favorite a stock for currently-logged-in user."""
-
-    if not g.user:
-        flash("Access unauthorized.", "danger")
-        return redirect("/")
-
-    favorited_stock = Favorites.query.get_or_404(stock)
-    if favorited_stock.user_id == g.user.id:
-        return abort(403)
-
-    user_favorites = g.user.favorites
-
-    if favorited_stock in user_favorites:
-        g.user.favorites = [fav for fav in user_favorites if fav != favorited_stock]
-    else:
-        g.user.favorites.append(favorited_stock)
-
-    db.session.commit()
-
-    return redirect(f"/dashboard/{g.user.id}")
+#     return redirect(f"/dashboard/{g.user.id}")
 
 
-# @app.route('/dashboard/<int:user_id>')  ---->>>Include soem of these for dashboard
-# def users_show(user_id):
-#     """Show user profile."""
+# @app.route('/stock/favorite/<stock>/<int:user_id>', methods=['POST'])
+# def add_favorite_stock(stock):
+#     """Favorite a stock for currently-logged-in user."""
 
-#     user = User.query.get_or_404(user_id)
-#     # snagging messages in order from the database;
-#     # user.messages won't be in order by default
-#     messages = (Message
-#                 .query
-#                 .filter(Message.user_id == user_id)
-#                 .order_by(Message.timestamp.desc())
-#                 .limit(100)
-#                 .all())
-#     likes = [message.id for message in user.likes]
-#     return render_template('users/show.html', user=user, messages=messages, likes=likes)
+#     if not g.user:
+#         flash("Access unauthorized.", "danger")
+#         return redirect("/")
 
+#     favorited_stock = Favorites.query.get_or_404(stock)
+#     if favorited_stock.user_id == g.user.id:
+#         return abort(403)
 
+#     user_favorites = g.user.favorites
 
+#     if favorited_stock in user_favorites:
+#         g.user.favorites = [fav for fav in user_favorites if fav != favorited_stock]
+#     else:
+#         g.user.favorites.append(favorited_stock)
 
+#     db.session.commit()
 
+#     return redirect(f"/dashboard/{g.user.id}")
 
 
 
@@ -335,38 +311,38 @@ def add_favorite_stock(stock):
 ##############################################################################
 # API request/response routes:
 
-# @app.route('/valuation/<ticker>/info')
-# def info(ticker):
-#     """Show the create valuation page"""
-#     stock_data = Stock.get_stock_info(ticker)
-#     return stock_data
+@app.route('/valuation/<ticker>/info')
+def info(ticker):
+    """Show the create valuation page"""
+    stock_data = Stock.get_stock_info(ticker)
+    return stock_data
 
 
-# @app.route('/valuation/<ticker>/cashflow')
-# def cashflow(ticker):
-#     """Show the create valuation page"""
-#     # stock_cf = Stock.get_stock_cashflow(ticker)
-#     stock_cf = Stock.get_stock_cashflow(ticker)
+@app.route('/valuation/<ticker>/cashflow')
+def cashflow(ticker):
+    """Show the create valuation page"""
+    # stock_cf = Stock.get_stock_cashflow(ticker)
+    stock_cf = Stock.get_stock_cashflow(ticker)
     
-#     return stock_cf
+    return stock_cf
 
 
-# @app.route('/valuation/<ticker>/bs')
-# def balance_sheet(ticker):
-#     """Show the create valuation page"""
-#     stock_bs = Stock.get_stock_balance_sheet(ticker)
-#     return stock_bs
+@app.route('/valuation/<ticker>/bs')
+def balance_sheet(ticker):
+    """Show the create valuation page"""
+    stock_bs = Stock.get_stock_balance_sheet(ticker)
+    return stock_bs
 
 
-# @app.route('/valuation/<ticker>/is')
-# def income_stmt(ticker):
-#     """Show the create valuation page"""
-#     stock_income_stmt = Stock.get_stock_income_stmt(ticker)
-#     return stock_income_stmt
+@app.route('/valuation/<ticker>/is')
+def income_stmt(ticker):
+    """Show the create valuation page"""
+    stock_income_stmt = Stock.get_stock_income_stmt(ticker)
+    return stock_income_stmt
 
 
-# @app.route('/valuation/<ticker>/shares')
-# def shares(ticker):
-#     """Show the create valuation page"""
-#     stock_shares = Stock.get_stock_shares(ticker)
-#     return stock_shares
+@app.route('/valuation/<ticker>/shares')
+def shares(ticker):
+    """Show the create valuation page"""
+    stock_shares = Stock.get_stock_shares(ticker)
+    return stock_shares
