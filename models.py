@@ -146,6 +146,14 @@ class Stock(db.Model):
         return stock_shares
 
     @classmethod
+    def get_stock_data(cls, ticker):
+        """Get stock data from api"""
+
+        stock_data = get_all_stock_data(ticker)
+        return stock_data
+    
+    ##### The below Functions not implemented yet ######
+    @classmethod
     def search(cls, ticker):
         """ Find stock with `ticker` in the database.
 
@@ -153,7 +161,7 @@ class Stock(db.Model):
         It searches for a stock whose ticker matches this ticker
         and, if it finds such a stock, returns that stock object.
 
-        If can't find matching stock, returns False.
+        If not found, returns False.
 
 
         This is not currently an implemented feature as stock info as of now
@@ -166,15 +174,9 @@ class Stock(db.Model):
         return False
 
     @classmethod
-    def get_stock_data(cls, ticker):
-        """Get stock data from api"""
-
-        stock_data = get_all_stock_data(ticker)
-        return stock_data
-
-    @classmethod
     def save_stock_data(cls, ticker):
         """Save stock data from api to database
+        
         This function is not currently implemented.
         All data called directly from api and not saved until valuations have been calculated.
         """
@@ -298,13 +300,12 @@ class Valuation(db.Model):
 
     def __repr__(self):
         return f"<User #{self.id}>"
-#######################################################################
-# class methods
+
     @classmethod
     def calculate_user_valuation(cls, symbol, revenue_growth, ebit_rate, tax_rate, depr_amort_rate, capex_rate, nwc, wacc, tgr, shares):
-        """calculates valuation but does not save to db"""
+        """calculates valuation but does not save to db, daving to db is a user privileged feature"""
 
-        # user assumptions
+        # converts assumptions to percentages for calculations
         growth_rate = float(revenue_growth/100)
         ebit_rate = float(ebit_rate/100)
         tax_rate = float(tax_rate/100)
@@ -317,7 +318,7 @@ class Valuation(db.Model):
         
         valuation_id = random.randint(0, 4000)
 
-        ############ Calculates predictions into future periods (total 5 periods)##########################################
+        ############ Calculates predictions into future periods (for total of 5 periods)
         
         # all records from newest to oldest
         records= get_historical_financials_api(symbol)      
@@ -338,7 +339,7 @@ class Valuation(db.Model):
         csh = float(records[lp].get('cash_equivs_mkt_securities'))
         dbt = float(records[lp].get('long_term_debt'))
         
-        # gets latest year financials
+        # gets latest year financials for beginning calculations
         ly = {
             'total_revenue' : tr,
             'ebit' : ebt,
@@ -352,7 +353,7 @@ class Valuation(db.Model):
         per_period_financials.append(ly)
 
 
-        #sums predicted ucfcs
+        #sums predicted unlevered free cash flows
         total_predicted_cfs = 0
         predicted_unlevered_cfs = []
 
@@ -361,7 +362,7 @@ class Valuation(db.Model):
 
         
         for i in range(6):
-            #calculates next five period financials
+            #calculations for each period
             
             p = i+1
     
@@ -391,7 +392,7 @@ class Valuation(db.Model):
 
             predicted_unlevered_cfs.append(cfs)
 
-            #calculates next period financials
+            #stores values in dictionary
             period_prediction = {
             'total_revenue' : convert_numbers_to_thousands(total_revenue),
             'ebit' : convert_numbers_to_thousands(ebit),
@@ -437,7 +438,7 @@ class Valuation(db.Model):
             'capex': capex,
             'change_working_capital': change_working_capital,
             }
-            ##saves each period into an array of dicts
+            
             per_period_financials.append(ny)
             per_period_predictions.append(period_prediction)
 
@@ -448,12 +449,11 @@ class Valuation(db.Model):
 
     @classmethod
     def calculate_and_save_valuation(cls, user_id, valuation_name, symbol, revenue_growth, ebit_rate, tax_rate, depr_amort_rate, capex_rate, nwc, wacc, tgr, shares):
-        """Saves user valuation data for 5 future periods. Similar logic to calculate_valuation()"""
+        """Saves user valuation data for 5 future periods (called only for signed up users)"""
 
-        # user assumptions
+        # converts assumtpions to percentages
         user_id = user_id
         valuation_name = valuation_name
-
         growth_rate = float(revenue_growth/100)
         ebit_rate = float(ebit_rate/100)
         tax_rate = float(tax_rate/100)
@@ -466,7 +466,7 @@ class Valuation(db.Model):
         
         valuation_id = random.randint(0, 4000)
     
-        ############ Calculates predictions into future periods (total 5 periods)##########################################
+        ############ Calculates predictions into future periods (total 5 periods)
 
         # all records from newest to oldest
         records= get_historical_financials_api(symbol)
@@ -501,7 +501,7 @@ class Valuation(db.Model):
         per_period_financials.append(ly)
 
 
-        #predicted ucfcs
+        #predicted unlevered free cash flows
         total_predicted_cfs = 0
         predicted_unlevered_cfs = []
         
@@ -598,17 +598,16 @@ class Valuation(db.Model):
     def get_prev_growth_rates(cls, symbol):
         """Calculates historical rate growth (3 periods total)"""
 
-        #holds all previous growth rates
         per_period_prev_growth = []
         
-        # all records from newest to oldest
+        # returns all records from newest to oldest
         records= list(get_historical_financials_api(symbol))
 
-        #starts with oldest financial record
+        #start with oldest financial record
         p = 0
         
         for i in range(len(records)-1):
-            #Current year financials arithmetics in calc, increment by 1 period
+            #Current year
             c_total_revenue = float(records[p].get('total_revenue'))
             c_ebit = float(records[p].get('ebit'))
             c_taxes = float(records[p].get('taxes'))
@@ -616,7 +615,7 @@ class Valuation(db.Model):
             c_capex = float(records[p].get('capex'))
             c_change_working_capital = float((records[p].get('change_working_capital')))
 
-            #Prev year financials arithmetics in calc, starts at oldest record
+            #Prev year
             p_total_revenue = float(records[p+1].get('total_revenue'))
             p_ebit = float(records[p+1].get('ebit'))
             p_taxes = float(records[p+1].get('taxes'))
@@ -641,7 +640,7 @@ class Valuation(db.Model):
             #move on to next period
             p += 1
 
-        #place holder for skipped period (first)
+        #place holder for skipped period (first period)
         first_period = {
             'period' : 'N/A',
             'lpr' : 'N/A',
@@ -692,7 +691,7 @@ class Valuation(db.Model):
             return valuation
         return False
 
-####################  Favorite Stocks Model  ########################
+####################  Favorite Stocks Model - Not Implemented yet ########################
 
 class Favorites(db.Model):
     """Favorited Stocks"""
