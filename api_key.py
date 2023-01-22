@@ -1,0 +1,1 @@
+API_SECRET_KEY = "fd56df7dcd777d7579bd95482dcd5e14"
