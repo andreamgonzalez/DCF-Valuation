@@ -1,11 +1,15 @@
+import os
 from unittest import TestCase
+
+# has to be set before app is imported, the database connection is set up on import
+os.environ['DATABASE_URL'] = 'postgresql:///valuation_test'
+
 from app import app
 from models import db
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql:///valuation_test'
-
-db.drop_all()
-db.create_all()
+with app.app_context():
+    db.drop_all()
+    db.create_all()
 
 
 class AppTestCase(TestCase):
@@ -13,7 +17,8 @@ class AppTestCase(TestCase):
         pass
 
     def tearDown(self):
-        db.session.rollback()
+        with app.app_context():
+            db.session.rollback()
 
     def test_homepage(self):
         with app.test_client() as client:

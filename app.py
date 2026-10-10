@@ -36,7 +36,7 @@ def add_user_to_g():
 
     if CURR_USER_KEY in session:
 
-        g.user = User.query.get(session[CURR_USER_KEY])
+        g.user = db.session.get(User, session[CURR_USER_KEY])
 
     else:
         g.user = None
@@ -134,7 +134,7 @@ def homepage():
     return render_template('public.html')
 
 
-@app.route('/dashboard/<user_id>', methods=["GET", "POST"])
+@app.route('/dashboard/<int:user_id>', methods=["GET", "POST"])
 def show_dashboard(user_id):
     """Show the users dashboard"""
 
@@ -229,7 +229,7 @@ def valuation_assumptions_form(ticker):
     return render_template("/valuations/valuationForm.html", stock=stock, form=form, prev_financials=prev_financials, prev_growth_rates=prev_growth_rates)
 
 
-@app.route('/valuation/<user_id>/<stock>/<valuation_id>')
+@app.route('/valuation/<int:user_id>/<stock>/<int:valuation_id>')
 def show_user_valuation(user_id, valuation_id, stock):
     """Show valuation results"""
     stock = Stock.get_stock_data(stock)
