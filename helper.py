@@ -70,3 +70,11 @@ def convert_nums(float_number):
     percentage = '{:.0f}'.format((float_number)/1000000)
 
     return percentage
+
+def safe_divide(numerator, denominator):
+    """Divides two numbers, gives back nan when the denominator is zero"""
+
+    if denominator == 0:
+        return float('nan')
+
+    return numerator / denominator

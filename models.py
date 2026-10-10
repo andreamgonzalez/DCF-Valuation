@@ -468,12 +468,12 @@ class Valuation(db.Model):
                 'period' : period,
                 'lpr' : p_total_revenue,
                 'cpr' : c_total_revenue,
-                'rev_growth': '{:.2%}'.format(( c_total_revenue / p_total_revenue ) - 1),
-                'ebit_growth': '{:.2%}'.format((c_ebit / p_ebit) - 1),
-                'taxes_growth':'{:.2%}'.format( c_taxes / p_taxes),
-                'depr_amort_growth': '{:.2%}'.format(c_depreciation_amortization / p_depreciation_amortization -1),
-                'capex_growth': '{:.2%}'.format(c_capex / p_capex),
-                'nwc_growth': '{:.2%}'.format(c_change_working_capital / p_change_working_capital - 1),
+                'rev_growth': '{:.2%}'.format(safe_divide(c_total_revenue, p_total_revenue) - 1),
+                'ebit_growth': '{:.2%}'.format(safe_divide(c_ebit, p_ebit) - 1),
+                'taxes_growth':'{:.2%}'.format(safe_divide(c_taxes, p_taxes)),
+                'depr_amort_growth': '{:.2%}'.format(safe_divide(c_depreciation_amortization, p_depreciation_amortization) - 1),
+                'capex_growth': '{:.2%}'.format(safe_divide(c_capex, p_capex)),
+                'nwc_growth': '{:.2%}'.format(safe_divide(c_change_working_capital, p_change_working_capital) - 1),
             }
             per_period_prev_growth.append(rates_growth)
 
