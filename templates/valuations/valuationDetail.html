@@ -99,7 +99,7 @@ thead{
       <thead>
         <tr>
           <th scope="col">STOCK SYMBOL : {{stock.symbol}}</th>
-          {% for p in valuation[1:] %}
+          {% for p in valuation %}
           <th scope="col" style="text-align: right">p{{p["period"]}}</th>
           {% endfor%}
         </tr>
@@ -108,63 +108,63 @@ thead{
 <!---------------------------------- Income Stmt ------------------------------------>
         <tr>
           <th scope="row">Revenue</th>
-          {% for p in valuation[1:] %}
+          {% for p in valuation %}
           <td>${{ p["total_revenue"]}}</td>
           {% endfor%}
         </tr>
 
         <tr>
           <th scope="row">EBIT</th>
-          {% for p in valuation[1:] %}
+          {% for p in valuation %}
           <td>${{ p["ebit"]}}</td>
           {% endfor%}
         </tr>
 
         <tr>
           <th scope="row">Taxes</th>
-          {% for p in valuation[1:] %}
+          {% for p in valuation %}
           <td>${{ p["taxes"]}}</td>
           {% endfor%}
         </tr>
 
         <tr>
           <th scope="row">EBIAT</th>
-          {% for p in valuation[1:] %}
+          {% for p in valuation %}
           <td>${{ p["ebiat"]}}</td>
           {% endfor%}
         </tr>
 
         <tr>
           <th scope="row">Depreciation & Amortization</th>
-          {% for p in valuation[1:] %}
+          {% for p in valuation %}
           <td>${{ p["depreciation_amortization"]}}</td>
           {% endfor%}
         </tr>
 
         <tr>
           <th scope="row">CAPEX</th>
-          {% for p in valuation[1:] %}
+          {% for p in valuation %}
           <td>${{ p["capex"]}}</td>
           {% endfor%}
         </tr>
 
         <tr>
           <th scope="row">Change in Working Capital</th>
-          {% for p in valuation[1:] %}
+          {% for p in valuation %}
           <td>${{ p["change_working_capital"]}}</td>
           {% endfor%}
         </tr>
 
         <tr>
           <th scope="row">Unlevered Free Cash Flow</th>
-          {% for p in valuation[1:] %}
+          {% for p in valuation %}
           <td>${{ p["unlevered_cf"]}}</td>
           {% endfor%}
         </tr>
 
         <tr>
           <th scope="row">Present Value of Free Cash Flow</th>
-          {% for p in valuation[1:] %}
+          {% for p in valuation %}
           <td>${{ p["pv_unlevered_cf_total"]}}</td>
           {% endfor%}
         </tr>
@@ -178,7 +178,7 @@ thead{
 
         <tr>
           <th scope="row">Present Value of Terminal Value</th>
-          {% for p in valuation[1:] %}
+          {% for p in valuation[:1] %}
           <td>${{ p["pv_terminal_value"]}}</td>
           {% endfor%}
         </tr>

@@ -41,111 +41,71 @@ def get_historical_financials_api(ticker):
     historical_financials_list = []
 
     #loops through each period in dictionary
-    for i in range(len(stock_cf)):
-        year -=1
-        stock_is_key = list(stock_is.keys())[i]
-        stock_is_data = stock_is[stock_is_key]
+    for period_key in stock_is:
+        #only uses periods that all three statements report
+        if period_key not in stock_cf or period_key not in stock_bs:
+            continue
 
-        stock_cf_key = list(stock_cf.keys())[i]
-        stock_cf_data = stock_cf[stock_cf_key]
+        stock_is_data = stock_is[period_key]
+        stock_cf_data = stock_cf[period_key]
+        stock_bs_data = stock_bs[period_key]
 
-        stock_bs_key = list(stock_bs.keys())[i]
-        stock_bs_data = stock_bs[stock_bs_key]
+        #the api sometimes returns an older period with no figures in it
+        if pd.isna(stock_is_data.get("TotalRevenue")):
+            continue
 
 #checks value exists #############################################################################
     ##### Income Statement figures
         
-        if not 'TotalRevenue' in stock_is_data:
-            TotalRevenue = 0
-        TotalRevenue = str(stock_is_data["TotalRevenue"])
+        TotalRevenue = str(stock_is_data.get("TotalRevenue", 0))
 
-        if not 'CostOfRevenue' in stock_is_data:
-            CostOfRevenue = 0
-        CostOfRevenue = str(stock_is_data["CostOfRevenue"])
+        CostOfRevenue = str(stock_is_data.get("CostOfRevenue", 0))
         
-        if not 'GrossProfit' in stock_is_data:
-            GrossProfit = 0
-        GrossProfit = str(stock_is_data["GrossProfit"])
+        GrossProfit = str(stock_is_data.get("GrossProfit", 0))
         
-        if not 'InterestExpense' in stock_is_data:
-            InterestExpense = 0
-        InterestExpense = str(stock_is_data["InterestExpense"])
+        InterestExpense = str(stock_is_data.get("InterestExpense", 0))
 
-        if not 'OperatingExpense' in stock_is_data:
-            OperatingExpense = 0
-        OperatingExpense = str(stock_is_data["OperatingExpense"])
+        OperatingExpense = str(stock_is_data.get("OperatingExpense", 0))
         
-        if not 'OperatingIncome' in stock_is_data:
-            OperatingIncome = 0
-        OperatingIncome = str(stock_is_data["OperatingIncome"])
+        OperatingIncome = str(stock_is_data.get("OperatingIncome", 0))
         
-        if not 'EBIT' in stock_is_data:
-            EBIT = 0
-        EBIT = str(stock_is_data["EBIT"])
+        EBIT = str(stock_is_data.get("EBIT", 0))
 
-        if not 'PretaxIncome' in stock_is_data:
-            PretaxIncome = 0
-        PretaxIncome = str(stock_is_data["PretaxIncome"])
+        PretaxIncome = str(stock_is_data.get("PretaxIncome", 0))
         
-        if not 'TaxProvision' in stock_is_data:
-            TaxProvision = 0
-        TaxProvision = str(stock_is_data["TaxProvision"])
+        TaxProvision = str(stock_is_data.get("TaxProvision", 0))
         
-        if not 'NetIncome' in stock_is_data:
-            NetIncome = 0
-        NetIncome = str(stock_is_data["NetIncome"])
+        NetIncome = str(stock_is_data.get("NetIncome", 0))
 
     ###### Cash Flow Figures
-        if not 'OperatingCashFlow' in stock_cf_data:
-            OperatingCashFlow = 0
-        OperatingCashFlow = str(stock_cf_data["OperatingCashFlow"])
+        OperatingCashFlow = str(stock_cf_data.get("OperatingCashFlow", 0))
         
-        if not 'DeferredTax' in stock_cf_data:
-            DeferredTax = 0
-        DeferredTax = str(stock_cf_data["DeferredTax"])
+        DeferredTax = str(stock_cf_data.get("DeferredTax", 0))
         
-        if not 'ChangeInInventory' in stock_cf_data:
-            ChangeInInventory = 0
-        ChangeInInventory = str(stock_cf_data.get("ChangeInInventory"))
+        ChangeInInventory = str(stock_cf_data.get("ChangeInInventory", 0))
 
-        if not 'ChangeInAccountPayable' in stock_cf_data:
-            ChangeInAccountPayable = 0
-        ChangeInAccountPayable = str(stock_cf_data["ChangeInAccountPayable"])
+        ChangeInAccountPayable = str(stock_cf_data.get("ChangeInAccountPayable", 0))
         
-        if not 'ChangeInReceivables' in stock_cf_data:
-            ChangeInReceivables = 0
-        ChangeInReceivables = str(stock_cf_data.get("ChangeInInventory"))
+        ChangeInReceivables = str(stock_cf_data.get("ChangeInReceivables", 0))
         
-        if not 'DepreciationAndAmortization' in stock_cf_data:
-            DepreciationAndAmortization = 0
-        DepreciationAndAmortization = str(stock_cf_data["DepreciationAndAmortization"])
+        DepreciationAndAmortization = str(stock_cf_data.get("DepreciationAndAmortization", 0))
         
-        if not 'InvestingCashFlow' in stock_cf_data:
-            InvestingCashFlow = 0
-        InvestingCashFlow = str(stock_cf_data["InvestingCashFlow"])
+        InvestingCashFlow = str(stock_cf_data.get("InvestingCashFlow", 0))
         
-        if not 'CapitalExpenditure' in stock_cf_data:
-            CapitalExpenditure = 0
-        CapitalExpenditure = str(stock_cf_data["CapitalExpenditure"])
+        CapitalExpenditure = str(stock_cf_data.get("CapitalExpenditure", 0))
 
-        if not 'ChangeInWorkingCapital' in stock_cf_data:
-            ChangeInWorkingCapital = 0
-        ChangeInWorkingCapital = str(stock_cf_data["ChangeInWorkingCapital"])
+        ChangeInWorkingCapital = str(stock_cf_data.get("ChangeInWorkingCapital", 0))
 
         ##### Balance Sheet Figures
 
-        if not 'LongTermDebt' in stock_bs_data:
-            LongTermDebt = 0
-        LongTermDebt = str(stock_bs_data["LongTermDebt"])
+        LongTermDebt = str(stock_bs_data.get("LongTermDebt", 0))
         
-        if not 'CashCashEquivalentsAndShortTermInvestments' in stock_bs_data:
-            cc = 0
-        cc = str(stock_bs_data["CashCashEquivalentsAndShortTermInvestments"])
+        cc = str(stock_bs_data.get("CashCashEquivalentsAndShortTermInvestments", 0))
         
  # ends value exists check ################################################################################      
         
         #creates a dictionary of financials per period returned from api
-        period = (str(list(stock_is.keys())[i]))[:4]
+        period = str(period_key)[:4]
 
         historical_financials = {
             'period' : period,
@@ -235,7 +195,7 @@ def get_first_historical_record(ticker):
 def get_stock_info(ticker):
     """Return stock info"""
     stock = yf.Ticker(ticker)
-    stock_info = convert_keys_to_str(stock.info)
+    stock_info = stock.info
     return stock_info
 
 def get_cash_flow(ticker):
@@ -259,11 +219,12 @@ def get_balance_sheet(ticker):
 def get_revenue_forecast(ticker):
     """Return stock revenue forecast object"""
     stock = yf.Ticker(ticker)
-    stock_revenue_forecast = convert_keys_to_str(stock.revenue_forecast)
+    stock_revenue_forecast = convert_keys_to_str(stock.revenue_estimate)
     return stock_revenue_forecast
 
 def get_stock_shares(ticker):
     """Return stock shares object"""
     stock = yf.Ticker(ticker)
-    stock_shares = convert_keys_to_str(stock.shares)
+    shares = stock.get_shares_full()
+    stock_shares = {str(date): int(count) for date, count in shares.items()}
     return stock_shares

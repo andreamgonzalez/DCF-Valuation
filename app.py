@@ -36,7 +36,7 @@ def add_user_to_g():
 
     if CURR_USER_KEY in session:
 
-        g.user = User.query.get(session[CURR_USER_KEY])
+        g.user = db.session.get(User, session[CURR_USER_KEY])
 
     else:
         g.user = None
@@ -134,7 +134,7 @@ def homepage():
     return render_template('public.html')
 
 
-@app.route('/dashboard/<user_id>', methods=["GET", "POST"])
+@app.route('/dashboard/<int:user_id>', methods=["GET", "POST"])
 def show_dashboard(user_id):
     """Show the users dashboard"""
 
@@ -183,28 +183,31 @@ def valuation_assumptions_form(ticker):
     
     if not g.user:
         form = PublicValuationForm(symbol=ticker)
-        if request.method == 'POST':
-            if form.validate_on_submit():
-                        valuation = Valuation.calculate_user_valuation(
-                        symbol = ticker,
-                        revenue_growth = form.revenue_growth.data,
-                        ebit_rate = form.ebit_rate.data,
-                        tax_rate = form.tax_rate.data,
-                        depr_amort_rate = form.depr_amort_rate.data,
-                        capex_rate = form.capex_rate.data,
-                        nwc = form.nwc.data,
-                        wacc = form.wacc.data,
-                        tgr = form.terminal_growth.data,
-                        shares = form.shares.data,
-                    )
-
-                        return render_template('/valuations/valuationDetail.html', valuation=valuation, stock=stock)
+        if form.validate_on_submit():
+            try:
+                valuation = Valuation.calculate_user_valuation(
+                    symbol = ticker,
+                    revenue_growth = form.revenue_growth.data,
+                    ebit_rate = form.ebit_rate.data,
+                    tax_rate = form.tax_rate.data,
+                    depr_amort_rate = form.depr_amort_rate.data,
+                    capex_rate = form.capex_rate.data,
+                    nwc = form.nwc.data,
+                    wacc = form.wacc.data,
+                    tgr = form.terminal_growth.data,
+                    shares = form.shares.data,
+                )
+            except ValueError as e:
+                flash(str(e), 'danger')
+            else:
+                return render_template('/valuations/valuationDetail.html', valuation=valuation, stock=stock)
 
         return render_template("/valuations/publicValuationForm.html", stock=stock, form=form, prev_financials=prev_financials, prev_growth_rates=prev_growth_rates)
     
     form = UserValuationForm(symbol=ticker)
-    if request.method == 'POST':
-        valuation = Valuation.calculate_and_save_valuation(
+    if form.validate_on_submit():
+        try:
+            valuation = Valuation.calculate_and_save_valuation(
                 valuation_name = form.valuation_name.data,
                 user_id = g.user.id,
                 symbol = ticker,
@@ -218,18 +221,15 @@ def valuation_assumptions_form(ticker):
                 tgr = form.terminal_growth.data,
                 shares = form.shares.data,
             )
-        db.session.add(valuation)
-        db.session.commit()
-
-        #get valuation id from db by name
-        valuation_id = Valuation.get_user_valuation_id(form.valuation_name.data, g.user.id)
-
-        return redirect(f'/valuation/{g.user.id}/{ticker}/{valuation_id}')
+        except ValueError as e:
+            flash(str(e), 'danger')
+        else:
+            return redirect(f'/valuation/{g.user.id}/{ticker}/{valuation.valuation_id}')
 
     return render_template("/valuations/valuationForm.html", stock=stock, form=form, prev_financials=prev_financials, prev_growth_rates=prev_growth_rates)
 
 
-@app.route('/valuation/<user_id>/<stock>/<valuation_id>')
+@app.route('/valuation/<int:user_id>/<stock>/<int:valuation_id>')
 def show_user_valuation(user_id, valuation_id, stock):
     """Show valuation results"""
     stock = Stock.get_stock_data(stock)
