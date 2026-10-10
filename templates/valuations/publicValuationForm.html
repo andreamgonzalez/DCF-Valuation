@@ -51,6 +51,9 @@ a.btn:hover{
         <div class="card-body">
           <!-- <h5 class="card-title">Enter Assumptions</h5> -->
           <div class="card-text">
+            {% for category, message in get_flashed_messages(with_categories=True) %}
+              <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
             <form method="POST" id="user_form">
               <div class="col">
               {{ form.hidden_tag() }}

@@ -6,6 +6,7 @@ from sqlalchemy import func
 
 from data import *
 from helper import *
+from dcf import project_dcf
 import random
 from datetime import date
 
@@ -302,144 +303,85 @@ class Valuation(db.Model):
         return f"<User #{self.id}>"
 
     @classmethod
+    def project_valuation(cls, symbol, revenue_growth, ebit_rate, tax_rate, depr_amort_rate, capex_rate, nwc, wacc, tgr, shares):
+        """Runs the DCF projection off of the latest financials from the api.
+
+        Returns the user assumptions converted to decimals along with the projection.
+        """
+
+        # converts assumptions from percentages to decimals for calculations
+        assumptions = {
+            'growth_rate' : float(revenue_growth/100),
+            'ebit_rate' : float(ebit_rate/100),
+            'tax_rate' : float(tax_rate/100),
+            'depreciation_amorization_rate' : float(depr_amort_rate/100),
+            'capex_rate' : float(capex_rate/100),
+            'change_nwc_rate' : float(nwc/100),
+            'wacc' : float(wacc/100),
+            'tgr' : float(tgr/100),
+            'shares' : float(shares)
+        }
+
+        # all records from newest to oldest, projection starts from the latest one
+        latest = get_historical_financials_api(symbol)[0]
+
+        projection = project_dcf(
+            revenue = float(latest.get('total_revenue')),
+            cash = float(latest.get('cash_equivs_mkt_securities')),
+            debt = float(latest.get('long_term_debt')),
+            shares = assumptions['shares'],
+            growth_rate = assumptions['growth_rate'],
+            ebit_rate = assumptions['ebit_rate'],
+            tax_rate = assumptions['tax_rate'],
+            depr_amort_rate = assumptions['depreciation_amorization_rate'],
+            capex_rate = assumptions['capex_rate'],
+            nwc_rate = assumptions['change_nwc_rate'],
+            wacc = assumptions['wacc'],
+            tgr = assumptions['tgr']
+        )
+
+        return assumptions, projection
+
+    @classmethod
     def calculate_user_valuation(cls, symbol, revenue_growth, ebit_rate, tax_rate, depr_amort_rate, capex_rate, nwc, wacc, tgr, shares):
-        """calculates valuation but does not save to db, daving to db is a user privileged feature"""
+        """calculates valuation but does not save to db, saving to db is a user privileged feature"""
 
-        # converts assumptions to percentages for calculations
-        growth_rate = float(revenue_growth/100)
-        ebit_rate = float(ebit_rate/100)
-        tax_rate = float(tax_rate/100)
-        depreciation_amorization_rate = float(depr_amort_rate/100)
-        capex_rate = float(capex_rate/100)
-        nwc = float(nwc/100)
-        wacc = float(wacc/100)
-        tgr = float(tgr/100)
-        shares = float(shares)
-        
+        assumptions, projection = cls.project_valuation(symbol, revenue_growth, ebit_rate, tax_rate, depr_amort_rate, capex_rate, nwc, wacc, tgr, shares)
+
         valuation_id = random.randint(0, 4000)
-
-        ############ Calculates predictions into future periods (for total of 5 periods)
-        
-        # all records from newest to oldest
-        records= get_historical_financials_api(symbol)      
 
         #holds all period predictions
         per_period_predictions=[]
-        per_period_financials = []
-       
-        ## first calculation based on latest financials from api
-        lp = 0
-        
-        tr= float(records[lp].get('total_revenue'))
-        ebt= float(records[lp].get('ebit'))
-        txs= float(records[lp].get('taxes'))
-        da = float(records[lp].get('depreciation_amortization'))
-        cpx = float(records[lp].get('capex'))
-        cwc = float((records[lp].get('change_working_capital')))
-        csh = float(records[lp].get('cash_equivs_mkt_securities'))
-        dbt = float(records[lp].get('long_term_debt'))
-        
-        # gets latest year financials for beginning calculations
-        ly = {
-            'total_revenue' : tr,
-            'ebit' : ebt,
-            'taxes' : txs,
-            'depreciation_amortization' : da,
-            'capex': cpx,
-            'change_working_capital': cwc,
-            'cash' : csh,
-            'debt' : dbt
-        }
-        per_period_financials.append(ly)
 
-
-        #sums predicted unlevered free cash flows
-        total_predicted_cfs = 0
-        predicted_unlevered_cfs = []
-
-        for i in predicted_unlevered_cfs:
-            total_predicted_cfs += predicted_unlevered_cfs['pv_unlevered_cf'][i]
-
-        
-        for i in range(6):
-            #calculations for each period
-            
-            p = i+1
-    
-            total_revenue = per_period_financials[i].get('total_revenue') * (1 + growth_rate)
-            ebit = per_period_financials[i].get('ebit') * (1 + ebit_rate)
-            taxes = per_period_financials[i].get('taxes') * (1 + tax_rate)
-            ebiat = per_period_financials[i].get('ebit') - per_period_financials[i].get('taxes')
-            depreciation_amortization = per_period_financials[i].get('depreciation_amortization') * (1 + depreciation_amorization_rate)
-            capex = per_period_financials[i].get('capex') * (1 + capex_rate)
-            change_working_capital = per_period_financials[i].get('change_working_capital') * (1 + nwc)
-            
-            unlevered_cf = per_period_financials[i].get('ebit') + per_period_financials[i].get('depreciation_amortization') - per_period_financials[i].get('capex') - per_period_financials[i].get('change_working_capital')
-            present_value_unlevered_cf = unlevered_cf  / pow((1+wacc),(p))
-            
-            terminal_value = ( unlevered_cf * (1+tgr)) / ((wacc-tgr) + .00001)
-            present_value_terminal_value = ( terminal_value / pow((1+wacc),(p)) )
-            
-            #uses both previous and current ucf's
-            enterprise_value = (total_predicted_cfs + unlevered_cf) + present_value_terminal_value
-            
-            equity_value = enterprise_value + per_period_financials[0].get('cash') - per_period_financials[0].get('debt') 
-            share_price = equity_value / shares
-            
-            cfs = {
-                'pv_unlevered_cf' : present_value_unlevered_cf
-            }
-
-            predicted_unlevered_cfs.append(cfs)
-
+        for period in projection['periods']:
             #stores values in dictionary
             period_prediction = {
-            'total_revenue' : convert_numbers_to_thousands(total_revenue),
-            'ebit' : convert_numbers_to_thousands(ebit),
-            'taxes' : convert_numbers_to_thousands(taxes),
-            'ebiat' : convert_numbers_to_thousands(ebiat),
-            'depreciation_amortization' : convert_numbers_to_thousands(depreciation_amortization),
-            'capex' : convert_numbers_to_thousands(capex),
-            'change_working_capital' : convert_numbers_to_thousands(change_working_capital),
-            'unlevered_cf' : convert_numbers_to_thousands(unlevered_cf), 
-            'pv_unlevered_cf_total' : convert_numbers_to_thousands(present_value_unlevered_cf),
+            'total_revenue' : convert_numbers_to_thousands(period['total_revenue']),
+            'ebit' : convert_numbers_to_thousands(period['ebit']),
+            'taxes' : convert_numbers_to_thousands(period['taxes']),
+            'ebiat' : convert_numbers_to_thousands(period['ebiat']),
+            'depreciation_amortization' : convert_numbers_to_thousands(period['depreciation_amortization']),
+            'capex' : convert_numbers_to_thousands(period['capex']),
+            'change_working_capital' : convert_numbers_to_thousands(period['change_working_capital']),
+            'unlevered_cf' : convert_numbers_to_thousands(period['unlevered_cf']),
+            'pv_unlevered_cf_total' : convert_numbers_to_thousands(period['pv_unlevered_cf']),
 
-            'terminal_value' : convert_numbers_to_thousands(terminal_value),
-            'pv_terminal_value' : convert_numbers_to_thousands(present_value_terminal_value),
-            
-            'enterprise_val' : convert_numbers_to_thousands(enterprise_value),
-            
-            'equity_value' : convert_numbers_to_thousands(equity_value),
-            'share_price' : convert_numbers_to_thousands(share_price),
+            #valuation totals are the same for every period
+            'terminal_value' : convert_numbers_to_thousands(projection['terminal_value']),
+            'pv_terminal_value' : convert_numbers_to_thousands(projection['pv_terminal_value']),
+
+            'enterprise_val' : convert_numbers_to_thousands(projection['enterprise_value']),
+
+            'equity_value' : convert_numbers_to_thousands(projection['equity_value']),
+            'share_price' : '{:,.2f}'.format(projection['share_price']),
 
             'valuation_id' : valuation_id,
-            'period' : i+1,
+            'period' : period['period'],
             'date_updated' : today.year,
             'symbol' : symbol,
-            
-            'growth_rate' : growth_rate,
-            'ebit_rate' : ebit_rate,
-            'tax_rate' : tax_rate,
-            'depreciation_amorization_rate' : depreciation_amorization_rate,
-            'capex_rate' : capex_rate,
-            'change_nwc_rate' : nwc,
-            'wacc' : wacc,
-            'tgr' : tgr,
-
-            'shares' : shares 
-
             }
+            period_prediction.update(assumptions)
 
-            ny = {
-            'total_revenue' : total_revenue,
-            'ebit' : ebit,
-            'taxes' : taxes,
-            'depreciation_amortization' : depreciation_amortization,
-            'capex': capex,
-            'change_working_capital': change_working_capital,
-            }
-            
-            per_period_financials.append(ny)
             per_period_predictions.append(period_prediction)
 
 
@@ -451,146 +393,44 @@ class Valuation(db.Model):
     def calculate_and_save_valuation(cls, user_id, valuation_name, symbol, revenue_growth, ebit_rate, tax_rate, depr_amort_rate, capex_rate, nwc, wacc, tgr, shares):
         """Saves user valuation data for 5 future periods (called only for signed up users)"""
 
-        # converts assumtpions to percentages
-        user_id = user_id
-        valuation_name = valuation_name
-        growth_rate = float(revenue_growth/100)
-        ebit_rate = float(ebit_rate/100)
-        tax_rate = float(tax_rate/100)
-        depreciation_amorization_rate = float(depr_amort_rate/100)
-        capex_rate = float(capex_rate/100)
-        nwc = float(nwc/100)
-        wacc = float(wacc/100)
-        tgr = float(tgr/100)
-        shares = float(shares)
-        
+        assumptions, projection = cls.project_valuation(symbol, revenue_growth, ebit_rate, tax_rate, depr_amort_rate, capex_rate, nwc, wacc, tgr, shares)
+
         valuation_id = random.randint(0, 4000)
-    
-        ############ Calculates predictions into future periods (total 5 periods)
 
-        # all records from newest to oldest
-        records= get_historical_financials_api(symbol)
-        
-        #holds all period financials
-        per_period_predictions=[]
-        per_period_financials = []
-
-        ## first calculation based on latest financials from api
-        lp = 0
-
-        tr= float(records[lp].get('total_revenue'))
-        ebt= float(records[lp].get('ebit'))
-        txs= float(records[lp].get('taxes'))
-        da = float(records[lp].get('depreciation_amortization'))
-        cpx = float(records[lp].get('capex'))
-        cwc = float((records[lp].get('change_working_capital')))
-        csh = float(records[lp].get('cash_equivs_mkt_securities'))
-        dbt = float(records[lp].get('long_term_debt'))
-        period = records[lp].get('period')
-        # gets latest year financials
-        ly = {
-            'total_revenue' : tr,
-            'ebit' : ebt,
-            'taxes' : txs,
-            'depreciation_amortization' : da,
-            'capex': cpx,
-            'change_working_capital': cwc,
-            'cash' : csh,
-            'debt' : dbt
-        }
-        per_period_financials.append(ly)
-
-
-        #predicted unlevered free cash flows
-        total_predicted_cfs = 0
-        predicted_unlevered_cfs = []
-        
-        for i in predicted_unlevered_cfs:
-            total_predicted_cfs += predicted_unlevered_cfs['pv_unlevered_cf'][i]
-
-        for i in range(6):
-            #calculates next period financials
-            p = i+1
-
-            total_revenue = per_period_financials[i].get('total_revenue') * (1 + growth_rate)
-            ebit = per_period_financials[i].get('ebit') * (1 + ebit_rate)
-            taxes = per_period_financials[i].get('taxes') * (1 + tax_rate)
-            ebiat = per_period_financials[i].get('ebit') - per_period_financials[i].get('taxes')
-            depreciation_amortization = per_period_financials[i].get('depreciation_amortization') * (1 + depreciation_amorization_rate)
-            capex = per_period_financials[i].get('capex') * (1 + capex_rate)
-            change_working_capital = per_period_financials[i].get('change_working_capital') * (1 + nwc)
-            
-            unlevered_cf = per_period_financials[i].get('ebit') + per_period_financials[i].get('depreciation_amortization') - per_period_financials[i].get('capex') - per_period_financials[i].get('change_working_capital')
-            present_value_unlevered_cf = unlevered_cf  / pow((1+wacc),(p))
-            
-            terminal_value = ( unlevered_cf * (1+tgr)) / ((wacc-tgr) + .00001)
-            present_value_terminal_value = ( terminal_value / pow((1+wacc),(p)) )
-            
-            #uses both previous and current ucf's
-            enterprise_value = (total_predicted_cfs + unlevered_cf) + present_value_terminal_value
-            
-            equity_value = enterprise_value + per_period_financials[0].get('cash') - per_period_financials[0].get('debt') 
-            share_price = equity_value / shares
-            
-            cfs = {
-                'pv_unlevered_cf' : present_value_unlevered_cf
-            }
-
-            predicted_unlevered_cfs.append(cfs)
-            
+        for period in projection['periods']:
             valuation = Valuation (
-                total_revenue = convert_nums(total_revenue),
-                ebit = convert_nums(ebit),
-                taxes = convert_nums(taxes),
-                ebiat = convert_nums(ebiat),
-                depreciation_amortization = convert_nums(depreciation_amortization),
-                capex = convert_nums(capex),
-                change_working_capital = convert_nums(change_working_capital),
-                
-                unlevered_cf = convert_nums(unlevered_cf), 
-                pv_unlevered_cf_total = convert_nums(present_value_unlevered_cf),
-                
-                terminal_value = convert_nums(terminal_value),
-                pv_terminal_value = convert_nums(present_value_terminal_value),
+                total_revenue = convert_nums(period['total_revenue']),
+                ebit = convert_nums(period['ebit']),
+                taxes = convert_nums(period['taxes']),
+                ebiat = convert_nums(period['ebiat']),
+                depreciation_amortization = convert_nums(period['depreciation_amortization']),
+                capex = convert_nums(period['capex']),
+                change_working_capital = convert_nums(period['change_working_capital']),
 
-                enterprise_val = convert_nums(enterprise_value),
-                
-                equity_value = convert_nums(equity_value), 
-                share_price = share_price,
-                
+                unlevered_cf = convert_nums(period['unlevered_cf']),
+                pv_unlevered_cf_total = convert_nums(period['pv_unlevered_cf']),
+
+                #valuation totals are the same for every period
+                terminal_value = convert_nums(projection['terminal_value']),
+                pv_terminal_value = convert_nums(projection['pv_terminal_value']),
+
+                enterprise_val = convert_nums(projection['enterprise_value']),
+
+                equity_value = convert_nums(projection['equity_value']),
+                share_price = round(projection['share_price'], 2),
+
                 user_id = user_id,
                 valuation_name = valuation_name,
                 valuation_id =valuation_id,
-                period = period,
+                period = period['period'],
                 date_updated = today.year,
                 symbol = symbol,
-                
-                growth_rate = growth_rate,
-                ebit_rate = ebit_rate,
-                tax_rate = tax_rate,
-                depreciation_amorization_rate= depreciation_amorization_rate,
-                capex_rate = capex_rate,
-                change_nwc_rate = nwc,
-                wacc = wacc,
-                tgr = tgr,
 
-                shares = shares           
-            
+                **assumptions
             )
             db.session.add(valuation)
-            db.session.commit()
 
-            ny = {
-            'total_revenue' : total_revenue,
-            'ebit' : ebit,
-            'taxes' : taxes,
-            'depreciation_amortization' : depreciation_amortization,
-            'capex': capex,
-            'change_working_capital': change_working_capital,
-            }
-            
-            per_period_financials.append(ny)
-            
+        db.session.commit()
 
         return valuation
 
@@ -685,7 +525,7 @@ class Valuation(db.Model):
         If can't find matching valuation, return False.
         """
 
-        valuation = cls.query.filter_by(valuation_id=id).all()
+        valuation = cls.query.filter_by(valuation_id=id).order_by(cls.period).all()
 
         if valuation:
             return valuation
